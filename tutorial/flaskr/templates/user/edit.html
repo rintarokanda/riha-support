@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block body %}
+  <h2>{{ 'Edit User' if user else 'Add User'}}</h2>
+  <form action="" method="post">
+    <dl>
+      <dt>Name:
+      <dd><input type=text size=20 name=name value="{{ user.name if user }}">
+      <dt>Email:
+      <dd><input type=text size=20 name=email value="{{ user.email if user }}">
+      <dt>uuid:
+      <dd><input type=text size=20 name=uuid value="{{ user.uuid if user }}">
+      <dt>性別:
+      <dd>男<input type="radio" name="sex" value="{{"men" if user}}">
+          女<input type="radio" name="sex" value="{{"women" if user}}">
+      <dt>年齢:
+      <dd><input type=text size=20 name=age value="{{ user.age if user }}">
+      <dt>介護レベル:
+      <dd><select name="level">
+          <option value="0" selected>介護レベルを選択</option>
+          <option value="1">要支援1</option>
+          <option value="2">要支援2</option>
+          <option value="3" >介護レベル1</option>
+          <option value="4">介護レベル2</option>
+        </select>
+      <dt>password:
+      <dd><input type=password size=20 name=password value="">
+      <dd><input type=submit value={{ 'save' if user else 'create' }}>
+    </dl>
+  </form>
+{% endblock %}

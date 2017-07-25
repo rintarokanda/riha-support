@@ -1,0 +1,39 @@
+<!doctype html>
+<head>
+<title>卒業研究</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyBqrDr2hEefQEHgRWYAghXMC-NFJ9X25j4",
+    //authDomain: "cheam-591a2.firebaseapp.com",
+    databaseURL: "https://riha-support.firebaseio.com/",
+  };
+  firebase.initializeApp(config);
+  //監視する
+  var starCountRef = firebase.database().ref('users/');
+  starCountRef.on('value', function(users) {
+    setUsers(users);
+  });
+
+  function setUsers(users) {
+    user_area = document.getElementById("users");
+    users = users.val();
+    el = '';
+    for (let id in users) {
+      el += "<h2>" + users[id].uuid + "</h2>";
+    }
+    user_area.innerHTML = el;
+  }
+</script>
+</head>
+<body>
+<div class=page>
+  <h1>リハビリ進捗管理システム受付</h1>
+  <a href="{{ url_for('show_entries') }}">home</a>
+  <div id="users"></div>
+</div>
+
+
+</body>
