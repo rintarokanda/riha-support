@@ -1,7 +1,15 @@
+{% extends "layout.html" %}
+{% block body %}
 <!doctype html>
 <head>
 <title>卒業研究</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/foundation.min.css') }}">
+<script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='js/foundation.min.js') }}"></script>
+<script>
+      $(document).foundation();
+</script>
 <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -29,11 +37,8 @@
 </script>
 </head>
 <body>
-<div class=page>
-  <h1>リハビリ進捗管理システム受付</h1>
-  <a href="{{ url_for('show_entries') }}">home</a>
   <div id="users"></div>
-</div>
 
 
 </body>
+{% endblock %}
