@@ -6,15 +6,17 @@
       <dd><input type=text size=20 name=title>
       <dt>Text:
       <dd><textarea name=text rows=5 cols=20></textarea>
-      <dd><input type=submit value=Share>
+      <dd><input class=button type=submit value=Share>
     </dl>
   </form>
 
+<div class="row">
   <ul class=entries>
   {% for entry in entries %}
-    <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+    <li><h4>{{ entry.title }}</h4>{{ entry.text|safe }}
   {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
   </ul>
+</div>
 {% endblock %}
