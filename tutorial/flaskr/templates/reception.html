@@ -1,7 +1,5 @@
-<!doctype html>
-<head>
-<title>卒業研究</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+{% extends "layout.html" %}
+{% block body %}
 <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -27,13 +25,5 @@
     user_area.innerHTML = el;
   }
 </script>
-</head>
-<body>
-<div class=page>
-  <h1>リハビリ進捗管理システム受付</h1>
-  <a href="{{ url_for('show_entries') }}">home</a>
-  <div id="users"></div>
-</div>
-
-
-</body>
+<div id="users"></div>
+{% endblock %}
