@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <h2>Users</h2>
+  <h1><small>利用者名簿</small></h1>
 
   <ul>
   {% for user in users %}
@@ -11,5 +11,7 @@
   {% endfor %}
   </ul>
 
-  <a href="{{ url_for('user_create') }}">create user</a>
+  <ul class="button-group">
+    <li><a href="{{ url_for('user_create') }}" class="button round">create user</a></li>
+  </ul>
 {% endblock body %}

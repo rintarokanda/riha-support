@@ -1,26 +1,22 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<h2>{{ user.name }}<small></small></h2>
-<div>
-  <dl>
-  <dt>性別:
-  <dd>{{ user.sex }}</dd>
-  <dt>年齢:
-  <dd>{{ user.age }}</dd>
-  <dt>介護レベル:
-  <dd>{{ user.level }}</dd>
-  <dt>メールアドレス:
-  <dd>{{ user.email }}</dd>
-  <dl>
-</div>
+<h1><small>{{ user.name }}</small></h1>
+<ul class="pricing-table">
+  <li class="description text-left">性別</li>
+  <li class="bullet-item text-left">{{ user.sex }}</li>
+  <li class="description text-left">年齢</li>
+  <li class="bullet-item text-left">{{ user.age }}</li>
+  <li class="description text-left">介護レベル</li>
+  <li class="bullet-item text-left">{{ user.level }}</li>
+  <li class="description text-left">メールアドレス</li>
+  <li class="bullet-item text-left">{{ user.email }}</li>
+</ul>
 
-<div>
-  <ul>
-    <li><a href="{{ url_for('user_edit', user_id=user.id) }}">edit</a></li>
-    <li><a class="user-delete-link" href="#" data-delete-url="{{ url_for('user_delete', user_id=user.id) }}">delete</a></li>
-  </ul>
-</div>
+<ul class="button-group">
+  <li><a href="{{ url_for('user_edit', user_id=user.id) }}" class="button success">edit</a></li>
+  <li><a class="user-delete-link button alert" href="#" data-delete-url="{{ url_for('user_delete', user_id=user.id) }}">delete</a></li>
+</ul>
 
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script>
