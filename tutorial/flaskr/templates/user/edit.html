@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <h1><small>{{ 'Edit User' if user else 'Add User'}}</small></h1>
+  <h1>{{ 'Edit User' if user else 'Add User'}}</h1>
   <form action="" method="post">
     <dl>
       <dt>Name:
@@ -25,7 +25,7 @@
         </select>
       <dt>password:
       <dd><input type=password size=20 name=password value="">
-      <dd><input class ="button"type=submit value={{ 'save' if user else 'create' }}>
+      <dd><input class="button" type=submit value={{ 'save' if user else 'create' }}>
     </dl>
   </form>
 {% endblock %}

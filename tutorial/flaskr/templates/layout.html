@@ -1,8 +1,8 @@
 <!doctype html>
 <head>
 <title>卒業研究</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/foundation.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
 <script src="{{ url_for('static', filename='js/foundation.min.js') }}"></script>
 <script>
@@ -12,7 +12,7 @@
 
 <body>
 <div class=page>
-  <div class = "header">
+  <div class ="header">
     <h1><font color=#f08a24>riha-support</font></h1>
   </div>
     <nav class="top-bar" data-topbar>
@@ -24,10 +24,11 @@
       <section class="top-bar-section">
         <ul>
           {% if session.user_id %}
-          <li class = "right active"><a href="{{ url_for('logout') }}"}}>logout</a></li>
+          <li class="right active"><a href="{{ url_for('logout') }}"}}>logout</a></li>
           <li><a href="{{ url_for('show_entries') }}">entries</a></li>
           <li><a href="{{ url_for('user_list') }}">users</a></li>
           <li><a href="{{ url_for('reception') }}">working</a></li>
+          <li><a href="{{ url_for('user_list') }}">schedule</a></li>
           {% else %}
           <li class ="right active"><a href="{{ url_for('login') }}">login</a></li>
           <li><a href="{{ url_for('show_entries') }}">entries</a></li>
