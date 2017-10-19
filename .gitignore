@@ -1,3 +1,5 @@
 .DS_Store
 *.pyc
 tutorial/flaskr/config.py
+tutorial/flaskr/static/uploads/*
+!tutorial/flaskr/static/uploads/.keep
