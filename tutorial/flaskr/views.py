@@ -1,3 +1,5 @@
+# coding:utf-8
+
 import os
 from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
@@ -6,7 +8,7 @@ from werkzeug.utils import secure_filename
 from flaskr import app, db
 from flaskr.models import Entry, Schedule, User
 
-UPLOAD_FOLDER = '/flaskr/UPLOAD_FOLDER'
+UPLOAD_FOLDER = '/path/to/static/uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 def allowed_file(filename):
@@ -57,9 +59,10 @@ def user_list():
 @login_required
 def user_detail(user_id):
     user = User.query.get(user_id)
+    user.id = str(user.id)
     return render_template('user/detail.html', user=user)
 
-@app.route('/users/<int:user_id>/edit/', methods=['GET', 'POST'])
+@app.route('/users/<int:user_id>/edit/', methods=['GET'])
 @login_required
 def user_edit(user_id):
     user = User.query.get(user_id)
@@ -79,7 +82,8 @@ def user_edit(user_id):
         return redirect(url_for('user_detail', user_id=user_id))
     return render_template('user/edit.html', user=user)
 
-def upload_file():
+@app.route('/users/<int:user_id>/edit/', methods=['POST'])
+def upload_file(user_id):
     if request.method == 'POST':
         # 投稿時にファイルが選択されているかを確認
         if 'file' not in request.files:
@@ -92,10 +96,9 @@ def upload_file():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
+            filename = 'user_image' + str(user_id) + '.png'
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            return redirect(url_for('user_detail', user_id=user_id))
     return
 
 @app.route('/users/create/', methods=['GET', 'POST'])
