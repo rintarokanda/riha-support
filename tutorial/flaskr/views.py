@@ -1,8 +1,17 @@
+import os
 from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify, session, g
+from werkzeug.utils import secure_filename
 from flaskr import app, db
-from flaskr.models import Entry, User
+from flaskr.models import Entry, Schedule, User
+
+UPLOAD_FOLDER = '/flaskr/UPLOAD_FOLDER'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def login_required(f):
     @wraps(f)
@@ -69,6 +78,25 @@ def user_edit(user_id):
         db.session.commit()
         return redirect(url_for('user_detail', user_id=user_id))
     return render_template('user/edit.html', user=user)
+
+def upload_file():
+    if request.method == 'POST':
+        # 投稿時にファイルが選択されているかを確認
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # ユーザがファイルを選択していなかった場合
+        # ファイル名なしだった場合
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
+    return
 
 @app.route('/users/create/', methods=['GET', 'POST'])
 @login_required

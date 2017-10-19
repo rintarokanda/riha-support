@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
 <title>卒業研究</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/foundation.css') }}">
+<link rel=stylesheet href="{{ url_for('static', filename='css/foundation.css') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
 <script src="{{ url_for('static', filename='js/foundation.min.js') }}"></script>
@@ -29,6 +29,7 @@
           <li><a href="{{ url_for('user_list') }}">users</a></li>
           <li><a href="{{ url_for('reception') }}">working</a></li>
           <li><a href="{{ url_for('user_list') }}">schedule</a></li>
+          <li><a href="{{ url_for('user_list') }}">result</a></li>
           {% else %}
           <li class ="right active"><a href="{{ url_for('login') }}">login</a></li>
           <li><a href="{{ url_for('show_entries') }}">entries</a></li>
