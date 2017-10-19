@@ -42,6 +42,15 @@ class User(db.Model):
         return u'<User id={self.id} email={self.email!r}>'.format(
                 self=self)
 
+class Schedule(db.Model):
+    __tablename__ = 'schedules'
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_date = db.Column(db.Date, nullable=False)
+    event_time = db.Column(db.Time, nullable=False)
+    event_a_user_id = db.Column(db.Integer, nullable=True)
+    event_b_user_id = db.Column(db.Integer, nullable=True)
+    event_c_user_id = db.Column(db.Integer, nullable=True)
 
 class Entry(db.Model):
     __tablename__ = 'entries'

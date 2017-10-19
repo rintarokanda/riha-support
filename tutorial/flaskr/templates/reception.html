@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
+<h1>リハビリ中</h1>
+
 <script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -20,7 +22,7 @@
     users = users.val();
     el = '';
     for (let id in users) {
-      el += "<h2>" + users[id].uuid + "</h2>";
+      el += "<h2>" + users[id].name + "</h2>";
     }
     user_area.innerHTML = el;
   }
