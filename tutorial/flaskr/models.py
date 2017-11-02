@@ -42,15 +42,6 @@ class User(db.Model):
         return u'<User id={self.id} email={self.email!r}>'.format(
                 self=self)
 
-class Schedule(db.Model):
-    __tablename__ = 'schedules'
-
-    id = db.Column(db.Integer, primary_key=True)
-    event_date = db.Column(db.Date, nullable=False)
-    event_time = db.Column(db.Time, nullable=False)
-    event_a_user_id = db.Column(db.Integer, nullable=True)
-    event_b_user_id = db.Column(db.Integer, nullable=True)
-    event_c_user_id = db.Column(db.Integer, nullable=True)
 
 class Entry(db.Model):
     __tablename__ = 'entries'
@@ -64,3 +55,12 @@ class Entry(db.Model):
 
 def init():
     db.create_all()
+
+
+class Result(db.Model):
+    __tablename__ = 'result'
+
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(100), unique=True, nullable=False)
+    machine_type = db.Column(db.String(100), unique=True, nullable=False)
+    counted_at = db.Column(db.TIMESTAMP, unique=False, nullable=False)

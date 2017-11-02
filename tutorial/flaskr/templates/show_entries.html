@@ -1,5 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
+
+<div class ="row">
+<div class="columns large-collapse">
   <form action="{{ url_for('add_entry') }}" method=post class=add-entry>
     <h1>コメント</h1>
     <dl>
@@ -19,5 +22,8 @@
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
   </ul>
+</div>
+
+</div>
 </div>
 {% endblock %}

@@ -1,19 +1,9 @@
-# coding:utf-8
-
-import os
 from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify, session, g
-from werkzeug.utils import secure_filename
 from flaskr import app, db
-from flaskr.models import Entry, Schedule, User
-
-UPLOAD_FOLDER = '/path/to/static/uploads'
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+from flaskr.models import Entry, User , Result
+import datetime
 
 def login_required(f):
     @wraps(f)
@@ -59,10 +49,9 @@ def user_list():
 @login_required
 def user_detail(user_id):
     user = User.query.get(user_id)
-    user.id = str(user.id)
     return render_template('user/detail.html', user=user)
 
-@app.route('/users/<int:user_id>/edit/', methods=['GET'])
+@app.route('/users/<int:user_id>/edit/', methods=['GET', 'POST'])
 @login_required
 def user_edit(user_id):
     user = User.query.get(user_id)
@@ -81,25 +70,6 @@ def user_edit(user_id):
         db.session.commit()
         return redirect(url_for('user_detail', user_id=user_id))
     return render_template('user/edit.html', user=user)
-
-@app.route('/users/<int:user_id>/edit/', methods=['POST'])
-def upload_file(user_id):
-    if request.method == 'POST':
-        # 投稿時にファイルが選択されているかを確認
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # ユーザがファイルを選択していなかった場合
-        # ファイル名なしだった場合
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = 'user_image' + str(user_id) + '.png'
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            return redirect(url_for('user_detail', user_id=user_id))
-    return
 
 @app.route('/users/create/', methods=['GET', 'POST'])
 @login_required
@@ -151,3 +121,32 @@ def logout():
 @app.route('/reception')
 def reception():
     return render_template('reception.html')
+
+@app.route('/select')
+def select():
+    return render_template('select.html')
+
+@app.route('/result_default')
+def result_default():
+    date = datetime.date.today().strftime('%Y-%m-%d')
+    result = Result.query.order_by(Result.id.desc()).all()
+    return render_template('result.html', result=result, date=date)
+
+@app.route('/result/<string:date>/')
+def result(date):
+    users = User.query.all()
+    results = []
+    for user in users:
+        results.append(db.engine.execute('select uuid, machine_type, count(*) as count, counted_at from result group by machine_type having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '" and uuid = "' + user.uuid + '"'))
+    return render_template('result.html', results=results, date=date)
+
+@app.route('/result/add', methods=['POST'])
+def result_add():
+    result = Result(
+            uuid=request.form['uuid'],
+            machine_type=request.form['machine_type'],
+            counted_at=request.form['counted_at']
+            )
+    db.session.add(result)
+    db.session.commit()
+    return redirect(url_for('result'))
