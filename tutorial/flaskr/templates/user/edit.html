@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 
 {% block body %}
+
+<div class ="row">
+<div class="columns large-collapse">
   <h1>{{ 'Edit User' if user else 'Add User'}}</h1>
   <form action="" method="post">
     <dl>
@@ -28,4 +31,7 @@
       <dd><input class="button" type=submit value={{ 'save' if user else 'create' }}>
     </dl>
   </form>
+
+</div>
+</div>
 {% endblock %}

@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class ="row">
+<div class="columns large-collapse">
+
+<div class="row">
+  <div class="columns large-collapse">
+    <h1>{{ date }}の実績報告画面</h1>
+  </div>
+</div>
+
+<form action="{{ url_for('result_add') }}" method=post class=result_add>
+  <dl>
+    <dt>uuid:
+    <dd><input type=text size=20 name=uuid value="">
+    <dt>machine_type:
+      <select name="machine_type">
+        <option value="a">マシンA</option>
+        <option value="b">マシンB</option>
+        <option value="c">マシンC</option>
+      </select>
+    <dt>counted_at:
+        <dd><input type=date size=20 name="counted_at" format ="yyyy-mm-dd HH:ii:ss" value="">
+      　<!-- <p><input type="date" name="example" min="2017-10-27" max="2018-3-31"></p> -->
+    <dd><input class="button" type=submit value={{ 'save'}}>
+  </dl>
+</form>
+
+
+<!-- {% for result in result %}
+<h4>{{ result.uuid }}</h4>{{ result.machine_type }} {{ result.counted_at }}
+{% else %}
+{% endfor %} -->
+
+{% for users_result in results %}
+  {% for result in users_result %}
+    <h3>{{ result.uuid }}</h3>
+    <h4>{{ result.count }}</h4>
+  {% endfor %}
+{% endfor %}
+
+
+<table>
+  <thead>
+    <tr>
+      <th width="225">利用者名</th>
+      <th width="150">リハビリ1</th>
+      <th width="150">リハビリ2</th>
+      <th width="150">リハビリ3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <h3>日にち(DB)</h3>
+    <tr>
+      <td>アジ(DB)</td>
+      <td>5回</td>
+      <td>3回</td>
+      <td>15回</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+</div>
+
+
+{% endblock %}

@@ -55,3 +55,12 @@ class Entry(db.Model):
 
 def init():
     db.create_all()
+
+
+class Result(db.Model):
+    __tablename__ = 'result'
+
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(100), unique=True, nullable=False)
+    machine_type = db.Column(db.String(100), unique=True, nullable=False)
+    counted_at = db.Column(db.TIMESTAMP, unique=False, nullable=False)
