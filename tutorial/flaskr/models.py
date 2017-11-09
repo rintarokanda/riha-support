@@ -45,9 +45,15 @@ class User(db.Model):
 def init():
     db.create_all()
 
+class Machine(db.Model):
+    __tablename__ = 'machines'
+
+    id      = db.Column(db.Integer, primary_key=True)
+    name    = db.Column(db.String)
+    display = db.Column(db.String)
 
 class Result(db.Model):
-    __tablename__ = 'result'
+    __tablename__ = 'results'
 
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(100), unique=True, nullable=False)

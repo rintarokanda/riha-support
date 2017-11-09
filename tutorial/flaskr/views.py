@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify, session, g
 from flaskr import app, db
-from flaskr.models import User, Result
+from flaskr.models import User, Machine, Result
 import datetime
 
 # Private ===
@@ -131,6 +131,64 @@ def user_delete(user_id):
     db.session.delete(user)
     db.session.commit()
     flash(u'ユーザを削除しました')
+    return jsonify({'status': 'OK'})
+
+# リハビリマシン一覧
+@app.route('/machines/')
+@login_required
+def machine_list():
+    machines = Machine.query.all()
+    return render_template('machine/list.html', machines=machines)
+
+# リハビリマシン新規作成
+@app.route('/machines/create/', methods=['GET', 'POST'])
+@login_required
+def machine_create():
+    if request.method == 'POST':
+        machine = Machine(name    = request.form['name'],
+                          display = request.form['display'])
+
+        db.session.add(machine)
+        db.session.commit()
+        flash(u'保存しました')
+        return redirect(url_for('machine_list'))
+
+    return render_template('machine/edit.html')
+
+# リハビリマシン編集
+@app.route('/machines/<int:machine_id>/edit/', methods=['GET', 'POST'])
+@login_required
+def machine_edit(machine_id):
+    machine = Machine.query.get(machine_id)
+
+    # リハビリマシンが見つからなければ404
+    if machine is None:
+        abort(404)
+
+    # POSTリクエストであれば、リハビリマシンを保存
+    if request.method == 'POST':
+        machine.name  = request.form['name']
+        machine.display  = request.form['display']
+
+        db.session.add(machine)
+        db.session.commit()
+        flash(u'保存しました')
+        return redirect(url_for('machine_list'))
+
+    return render_template('machine/edit.html', machine=machine)
+
+# リハビリマシン削除 (API @DELETE)
+@app.route('/machines/<int:machine_id>/delete/', methods=['DELETE'])
+def machine_delete(machine_id):
+    machine = Machine.query.get(machine_id)
+
+    # リハビリマシンが見つからなければ404
+    if machine is None:
+        abort(404)
+
+    db.session.delete(machine)
+    db.session.commit()
+    flash(u'リハビリマシンを削除しました')
     return jsonify({'status': 'OK'})
 
 # 受付中ユーザ一覧
