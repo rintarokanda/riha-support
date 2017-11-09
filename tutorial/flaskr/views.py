@@ -1,10 +1,14 @@
+# coding:utf-8
+
 from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify, session, g
 from flaskr import app, db
-from flaskr.models import Entry, User , Result
+from flaskr.models import User, Result
 import datetime
 
+# Private ===
+# ログイン必須にする
 def login_required(f):
     @wraps(f)
     def decorated_view(*args, **kwargs):
@@ -13,6 +17,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_view
 
+# ユーザ情報を読み込む
 @app.before_request
 def load_user():
     user_id = session.get('user_id')
@@ -21,23 +26,13 @@ def load_user():
     else:
         g.user = User.query.get(session['user_id'])
 
+# === /Private
 
+# === Routes
+# TOPページ
 @app.route('/')
-def show_entries():
-    entries = Entry.query.order_by(Entry.id.desc()).all()
-    return render_template('show_entries.html', entries=entries)
-
-@app.route('/add', methods=['POST'])
-def add_entry():
-    entry = Entry(
-            title=request.form['title'],
-            text=request.form['text']
-            )
-    db.session.add(entry)
-    db.session.commit()
-    flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
-
+def home():
+    return render_template('home.html')
 
 @app.route('/users/')
 @login_required
@@ -107,7 +102,7 @@ def login():
         if authenticated:
             session['user_id'] = user.id
             flash('You were logged in')
-            return redirect(url_for('show_entries'))
+            return redirect(url_for('home'))
         else:
             flash('Invalid email or password')
     return render_template('login.html')
@@ -149,4 +144,4 @@ def result_add():
             )
     db.session.add(result)
     db.session.commit()
-    return redirect(url_for('result'))
+    return redirect(url_for('result_add'))

@@ -25,14 +25,14 @@
         <ul>
           {% if session.user_id %}
           <li class="right active"><a href="{{ url_for('logout') }}"}}>logout</a></li>
-          <li><a href="{{ url_for('show_entries') }}">entries</a></li>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
           <li><a href="{{ url_for('user_list') }}">users</a></li>
           <li><a href="{{ url_for('reception') }}">working</a></li>
           <li><a href="{{ url_for('select') }}">schedule</a></li>
           <li><a href="{{ url_for('result_default')}}">result</a></li>
           {% else %}
           <li class ="right active"><a href="{{ url_for('login') }}">login</a></li>
-          <li><a href="{{ url_for('show_entries') }}">entries</a></li>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
           {% endif %}
         </ul>
       </section>
