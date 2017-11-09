@@ -29,71 +29,13 @@ def load_user():
 # === /Private
 
 # === Routes
-# TOPページ
+
+# TOP
 @app.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/users/')
-@login_required
-def user_list():
-    users = User.query.all()
-    return render_template('user/list.html', users=users)
-
-@app.route('/users/<int:user_id>/')
-@login_required
-def user_detail(user_id):
-    user = User.query.get(user_id)
-    return render_template('user/detail.html', user=user)
-
-@app.route('/users/<int:user_id>/edit/', methods=['GET', 'POST'])
-@login_required
-def user_edit(user_id):
-    user = User.query.get(user_id)
-    if user is None:
-        abort(404)
-    if request.method == 'POST':
-        user.name=request.form['name']
-        user.email=request.form['email']
-        user.uuid=request.form['uuid']
-        user.sex=request.form['sex']
-        user.age=request.form['age']
-        user.level=request.form['level']
-        if request.form['password']:
-            user.password=request.form['password']
-        #db.session.add(user)
-        db.session.commit()
-        return redirect(url_for('user_detail', user_id=user_id))
-    return render_template('user/edit.html', user=user)
-
-@app.route('/users/create/', methods=['GET', 'POST'])
-@login_required
-def user_create():
-    if request.method == 'POST':
-        user = User(name=request.form['name'],
-                    email=request.form['email'],
-                    uuid=request.form['uuid'],
-                    sex=request.form['sex'],
-                    age=request.form['age'],
-                    level=request.form['level'],
-                    password=request.form['password'])
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for('user_list'))
-    return render_template('user/edit.html')
-
-@app.route('/users/<int:user_id>/delete/', methods=['DELETE'])
-def user_delete(user_id):
-    user = User.query.get(user_id)
-    if user is None:
-        response = jsonify({'status': 'Not Found'})
-        response.status_code = 404
-        return response
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({'status': 'OK'})
-
-
+# ログイン
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -101,25 +43,100 @@ def login():
                 request.form['email'], request.form['password'])
         if authenticated:
             session['user_id'] = user.id
-            flash('You were logged in')
+            flash(u'ログインしました')
             return redirect(url_for('home'))
         else:
-            flash('Invalid email or password')
+            flash(u'メールアドレスまたはパスワードが正しくありません')
     return render_template('login.html')
 
+# ログアウト
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    flash('You were logged out')
+    flash(u'ログアウトしました')
     return redirect(url_for('login'))
 
+# ユーザ一覧
+@app.route('/users/')
+@login_required
+def user_list():
+    users = User.query.all()
+    return render_template('user/list.html', users=users)
+
+# ユーザ詳細
+@app.route('/users/<int:user_id>/')
+@login_required
+def user_detail(user_id):
+    user = User.query.get(user_id)
+    return render_template('user/detail.html', user=user)
+
+# ユーザ編集
+@app.route('/users/<int:user_id>/edit/', methods=['GET', 'POST'])
+@login_required
+def user_edit(user_id):
+    user = User.query.get(user_id)
+
+    # ユーザが見つからなければ404
+    if user is None:
+        abort(404)
+
+    # POSTリクエストであれば、ユーザを保存
+    if request.method == 'POST':
+        user.name  = request.form['name']
+        user.email = request.form['email']
+        user.uuid  = request.form['uuid']
+        user.sex   = request.form['sex']
+        user.age   = request.form['age']
+        user.level = request.form['level']
+
+        if request.form['password']:
+            user.password=request.form['password']
+
+        db.session.add(user)
+        db.session.commit()
+        flash(u'保存しました')
+        return render_template('user/detail.html', user=user)
+
+    return render_template('user/edit.html', user=user)
+
+# ユーザ新規作成
+@app.route('/users/create/', methods=['GET', 'POST'])
+@login_required
+def user_create():
+    if request.method == 'POST':
+        user = User(name     = request.form['name'],
+                    email    = request.form['email'],
+                    uuid     = request.form['uuid'],
+                    sex      = request.form['sex'],
+                    age      = request.form['age'],
+                    level    = request.form['level'],
+                    password = request.form['password'])
+
+        db.session.add(user)
+        db.session.commit()
+        flash(u'保存しました')
+        return render_template('user/detail.html', user=user)
+
+    return render_template('user/edit.html')
+
+# ユーザ削除 (API @DELETE)
+@app.route('/users/<int:user_id>/delete/', methods=['DELETE'])
+def user_delete(user_id):
+    user = User.query.get(user_id)
+
+    # ユーザが見つからなければ404
+    if user is None:
+        abort(404)
+
+    db.session.delete(user)
+    db.session.commit()
+    flash(u'ユーザを削除しました')
+    return jsonify({'status': 'OK'})
+
+# 受付中ユーザ一覧
 @app.route('/reception')
 def reception():
     return render_template('reception.html')
-
-@app.route('/select')
-def select():
-    return render_template('select.html')
 
 @app.route('/result_default')
 def result_default():
@@ -145,3 +162,5 @@ def result_add():
     db.session.add(result)
     db.session.commit()
     return redirect(url_for('result_add'))
+
+# ===/Routes
