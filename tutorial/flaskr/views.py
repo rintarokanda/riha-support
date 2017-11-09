@@ -121,6 +121,7 @@ def user_create():
 
 # ユーザ削除 (API @DELETE)
 @app.route('/users/<int:user_id>/delete/', methods=['DELETE'])
+@login_required
 def user_delete(user_id):
     user = User.query.get(user_id)
 
@@ -179,6 +180,7 @@ def machine_edit(machine_id):
 
 # リハビリマシン削除 (API @DELETE)
 @app.route('/machines/<int:machine_id>/delete/', methods=['DELETE'])
+@login_required
 def machine_delete(machine_id):
     machine = Machine.query.get(machine_id)
 
@@ -197,12 +199,14 @@ def reception():
     return render_template('reception.html')
 
 @app.route('/result_default')
+@login_required
 def result_default():
     date = datetime.date.today().strftime('%Y-%m-%d')
     result = Result.query.order_by(Result.id.desc()).all()
     return render_template('result.html', result=result, date=date)
 
 @app.route('/result/<string:date>/')
+@login_required
 def result(date):
     users = User.query.all()
     results = []
@@ -211,6 +215,7 @@ def result(date):
     return render_template('result.html', results=results, date=date)
 
 @app.route('/result/add', methods=['POST'])
+@login_required
 def result_add():
     result = Result(
             uuid=request.form['uuid'],
@@ -221,4 +226,22 @@ def result_add():
     db.session.commit()
     return redirect(url_for('result_add'))
 
-# ===/Routes
+# === /Routes
+
+# === API Routes
+
+@app.route('/api/result/add', methods=['POST'])
+def api_result_add():
+    try:
+        result = Result(
+                uuid=request.form['uuid'],
+                machine_type=request.form['machine_type'],
+                counted_at=request.form['counted_at']
+                )
+        db.session.add(result)
+        db.session.commit()
+        return jsonify({'status': 'OK', 'result': {'id': result.id, 'machine_type': result.machine_type, 'counted_at' : result.counted_at}})
+    except:
+        return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
+
+# === /API Routes
