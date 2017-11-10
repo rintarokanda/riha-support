@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class ="row">
+  <div class="columns large-collapse">
+    <h1>{{ 'リハビリマシン編集' if machine else '新規作成'}}</h1>
+    <form action="" method="post">
+      <dl>
+        <dt>ID:
+        <dd><input type=text size=20 name=name value="{{ machine.name if machine }}">
+        <dt>表示名:
+        <dd><input type=text size=20 name=display value="{{ machine.display if machine }}">
+        <dd><input class="button" type=submit value="保存">
+        <dd style={{ 'display:none' if not machine }}><a class="machine-delete-link button alert" href="#" data-delete-url="{{ url_for('machine_delete', machine_id=machine.id) if machine }}">削除</a>
+      </dl>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  $(function() {
+    $(".machine-delete-link").on("click", function() {
+      var delete_url = $(this).attr('data-delete-url');
+      $.ajax({
+        url: delete_url,
+        type: 'DELETE',
+        success: function(response) {
+          if (response.status == 'OK') {
+            window.location = '{{ url_for('machine_list') }}';
+          } else {
+            alert('Delete failed.')
+          }
+        }
+      });
+      return false;
+    });
+  });
+</script>
+{% endblock %}

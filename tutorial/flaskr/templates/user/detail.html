@@ -18,7 +18,6 @@
   <li><a class="user-delete-link button alert" href="#" data-delete-url="{{ url_for('user_delete', user_id=user.id) }}">delete</a></li>
 </ul>
 
-<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script>
   $(function() {
     $(".user-delete-link").on("click", function() {
@@ -38,6 +37,4 @@
     });
   });
 </script>
-
-
 {% endblock body %}

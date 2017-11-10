@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class ="row">
+<div class="columns large-collapse">
+
+  <h1>リハビリマシン一覧</h1>
+
+  <table>
+    <tr>
+      <th>番号</th>
+      <th>ID</th>
+      <th>表示名</th>
+    </tr>
+    {% for machine in machines %}
+    <tr>
+      <td><a href="{{ url_for('machine_edit', machine_id=machine.id) }}">{{ machine.id }}</a></td>
+      <td><a href="{{ url_for('machine_edit', machine_id=machine.id) }}">{{ machine.name }}</a></td>
+      <td><a href="{{ url_for('machine_edit', machine_id=machine.id) }}">{{ machine.display }}</a></td>
+    </tr>
+    {% else %}
+    <tr>
+      <td>現在リハビリマシンが登録されていません</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <ul class="button-group">
+    <li><a href="{{ url_for('machine_create') }}" class="button round">新規作成</a></li>
+  </ul>
+
+</list>
+</list>
+{% endblock body %}

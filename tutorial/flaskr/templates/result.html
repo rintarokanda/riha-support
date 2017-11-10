@@ -45,20 +45,21 @@
 <table>
   <thead>
     <tr>
-      <th width="225">利用者名</th>
-      <th width="150">リハビリ1</th>
-      <th width="150">リハビリ2</th>
-      <th width="150">リハビリ3</th>
+      <th width="225">ID</th>
+      <th width="150">UUID</th>
+      <th width="150">マシンタイプ</th>
+      <th width="150">動作検出日時</th>
     </tr>
   </thead>
   <tbody>
-    <h3>日にち(DB)</h3>
+    {% for row in result %}
     <tr>
-      <td>アジ(DB)</td>
-      <td>5回</td>
-      <td>3回</td>
-      <td>15回</td>
+      <td>{{ row.id }}</td>
+      <td>{{ row.uuid }}</td>
+      <td>{{ row.machine_type }}</td>
+      <td>{{ row.counted_at }}</td>
     </tr>
+    {% endfor %}
   </tbody>
 </table>
 
