@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify, session, g
 from flaskr import app, db
-from flaskr.models import User, Machine, AccessLog, Result
+from flaskr.models import User, Machine, AccessLog, MachineLog, Result
 import datetime
 
 # Private ===
@@ -274,6 +274,30 @@ def api_reception():
                 uuid       = request.form['uuid'],
                 )
         return jsonify({'message': message})
+    except:
+        return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
+
+@app.route('/api/standby', methods=['POST'])
+def api_standby():
+    try:
+        # ユーザのマシン接近記録を取得
+        log = MachineLog.query.filter(MachineLog.uuid == request.form['uuid'], MachineLog.machine_id == request.form['machine_id']).first()
+
+        # 最新の接近記録がなければ作成
+        if log is None:
+            log = MachineLog(
+                uuid       = request.form['uuid'],
+                machine_id = request.form['machine_id'],
+                entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                )
+
+        # 接近記録があれば延長
+        else:
+            log.entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        db.session.add(log)
+        db.session.commit()
+        return jsonify({'message': 'Standby.'})
     except:
         return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
 
