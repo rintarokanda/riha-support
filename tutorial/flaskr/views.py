@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify, session, g
 from flaskr import app, db
-from flaskr.models import User, Machine, Result
+from flaskr.models import User, Machine, AccessLog, MachineLog, Result
 import datetime
 
 # Private ===
@@ -241,6 +241,63 @@ def api_result_add():
         db.session.add(result)
         db.session.commit()
         return jsonify({'status': 'OK', 'result': {'id': result.id, 'machine_type': result.machine_type, 'counted_at' : result.counted_at}})
+    except:
+        return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
+
+# enter or exit
+@app.route('/api/reception', methods=['POST'])
+def api_reception():
+    try:
+        # 最新の入室記録を確認
+        recent_log = AccessLog.query.filter(AccessLog.uuid == request.form['uuid'], AccessLog.exited_at == None).order_by(AccessLog.uuid).first()
+
+        # 最新の入室記録がなければ入室
+        if recent_log is None:
+            recent_log = AccessLog(
+                uuid       = request.form['uuid'],
+                entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                )
+            message = 'Entered.'
+
+        # 最新の入手つ記録が30秒以下だと以下だと受け付けない
+        elif datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=30):
+            return jsonify({'message': 'Cannot exit too soon.'})
+
+        # 入室記録があれば退出
+        else:
+            recent_log.exited_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            message = 'Exited.'
+
+        db.session.add(recent_log)
+        db.session.commit()
+        result = Result(
+                uuid       = request.form['uuid'],
+                )
+        return jsonify({'message': message})
+    except:
+        return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
+
+@app.route('/api/standby', methods=['POST'])
+def api_standby():
+    try:
+        # ユーザのマシン接近記録を取得
+        log = MachineLog.query.filter(MachineLog.uuid == request.form['uuid'], MachineLog.machine_id == request.form['machine_id']).first()
+
+        # 最新の接近記録がなければ作成
+        if log is None:
+            log = MachineLog(
+                uuid       = request.form['uuid'],
+                machine_id = request.form['machine_id'],
+                entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                )
+
+        # 接近記録があれば延長
+        else:
+            log.entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        db.session.add(log)
+        db.session.commit()
+        return jsonify({'message': 'Standby.'})
     except:
         return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
 
