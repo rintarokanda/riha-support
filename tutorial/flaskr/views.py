@@ -219,7 +219,6 @@ def result(date):
 def result_add():
     result = Result(
             uuid=request.form['uuid'],
-            machine_type=request.form['machine_type'],
             counted_at=request.form['counted_at']
             )
     db.session.add(result)
@@ -234,13 +233,12 @@ def result_add():
 def api_result_add():
     try:
         result = Result(
-                uuid=request.form['uuid'],
-                machine_type=request.form['machine_type'],
-                counted_at=request.form['counted_at']
+                machine_id=request.form['machine_id'],
+                counted_at=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 )
         db.session.add(result)
         db.session.commit()
-        return jsonify({'status': 'OK', 'result': {'id': result.id, 'machine_type': result.machine_type, 'counted_at' : result.counted_at}})
+        return jsonify({'status': 'OK', 'result': {'id': result.id, 'machine_id': result.machine_id, 'counted_at' : result.counted_at}})
     except:
         return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
 
