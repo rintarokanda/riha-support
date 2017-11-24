@@ -257,7 +257,7 @@ def api_reception():
                 )
             message = 'Entered.'
 
-        # 最新の入手つ記録が30秒以下だと以下だと受け付けない
+        # 最新の入室記録が30秒以下だと以下だと受け付けない
         elif datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=30):
             return jsonify({'message': 'Cannot exit too soon.'})
 
@@ -282,7 +282,7 @@ def api_standby():
         log = MachineLog.query.filter(MachineLog.uuid == request.form['uuid'], MachineLog.machine_id == request.form['machine_id']).first()
 
         # 最新の接近記録がなければ作成
-        if log is None:
+        if log is None or log.uuid != request.form['uuid']:
             log = MachineLog(
                 uuid       = request.form['uuid'],
                 machine_id = request.form['machine_id'],
