@@ -1,0 +1,2 @@
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rintaro@172.17.0.2/testdb'
+SECRET_KEY = 'rintaro kanda'
