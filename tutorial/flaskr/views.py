@@ -21,6 +21,7 @@ def login_required(f):
 @app.before_request
 def load_user():
     user_id = session.get('user_id')
+    g.today = datetime.datetime.now().strftime('%Y-%m-%d')
     if user_id is None:
         g.user = None
     else:
@@ -198,20 +199,19 @@ def machine_delete(machine_id):
 def reception():
     return render_template('reception.html')
 
-@app.route('/result_default')
-@login_required
-def result_default():
-    date = datetime.date.today().strftime('%Y-%m-%d')
-    result = Result.query.order_by(Result.id.desc()).all()
-    return render_template('result.html', result=result, date=date)
-
 @app.route('/result/<string:date>/')
 @login_required
 def result(date):
     users = User.query.all()
     results = []
     for user in users:
-        results.append(db.engine.execute('select uuid, machine_type, count(*) as count, counted_at from result group by machine_type having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '" and uuid = "' + user.uuid + '"'))
+        results.append({
+            'result': db.engine.execute('select uuid, machine_id, count(*) as count, counted_at from results group by machine_id having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '" and uuid = "' + user.uuid + '"'),
+            'user': {
+                'id': user.id,
+                'name': user.name
+            }
+        })
     return render_template('result.html', results=results, date=date)
 
 @app.route('/result/add', methods=['POST'])
@@ -242,6 +242,34 @@ def api_result_add():
     except:
         return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
 
+# get entered user
+@app.route('/api/reception/recent', methods=['GET'])
+def api_reception_recent():
+    # 最新の入室記録を確認
+    logs = AccessLog.query.filter(AccessLog.exited_at == None).order_by(AccessLog.uuid)
+    entered_users = []
+
+    for log in logs:
+        user = User.query.filter(User.uuid == log.uuid).first()
+        entered_users.append({'id': user.id, 'name': user.name})
+
+    recent_log = AccessLog.query.order_by(AccessLog.uuid).first()
+
+    # 最新の入室
+    if recent_log is not None and recent_log.exited_at is None and datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=10):
+        user = User.query.filter(User.uuid == recent_log.uuid).first()
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'result': {'id': user.id, 'name': user.name, 'type': 'entered'}})
+
+    # 最新の退出
+    elif recent_log is not None and recent_log.exited_at is not None and datetime.datetime.now() - recent_log.exited_at < datetime.timedelta(seconds=10):
+        user = User.query.filter(User.uuid == recent_log.uuid).first()
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'result': {'id': user.id, 'name': user.name, 'type': 'exited'}})
+
+    # それ以外
+    else:
+        return jsonify({'status': 'OK', 'result': None})
+
+
 # enter or exit
 @app.route('/api/reception', methods=['POST'])
 def api_reception():
@@ -257,8 +285,8 @@ def api_reception():
                 )
             message = 'Entered.'
 
-        # 最新の入手つ記録が30秒以下だと以下だと受け付けない
-        elif datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=30):
+        # 最新の入室記録が30秒以下だと以下だと受け付けない
+        elif datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=10):
             return jsonify({'message': 'Cannot exit too soon.'})
 
         # 入室記録があれば退出
@@ -268,7 +296,7 @@ def api_reception():
 
         db.session.add(recent_log)
         db.session.commit()
-        result = Result(
+        result = AccessLog(
                 uuid       = request.form['uuid'],
                 )
         return jsonify({'message': message})
@@ -282,7 +310,7 @@ def api_standby():
         log = MachineLog.query.filter(MachineLog.uuid == request.form['uuid'], MachineLog.machine_id == request.form['machine_id']).first()
 
         # 最新の接近記録がなければ作成
-        if log is None:
+        if log is None or log.uuid != request.form['uuid']:
             log = MachineLog(
                 uuid       = request.form['uuid'],
                 machine_id = request.form['machine_id'],
