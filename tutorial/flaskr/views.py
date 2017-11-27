@@ -21,6 +21,7 @@ def login_required(f):
 @app.before_request
 def load_user():
     user_id = session.get('user_id')
+    g.today = datetime.datetime.now().strftime('%Y-%m-%d')
     if user_id is None:
         g.user = None
     else:
@@ -198,20 +199,19 @@ def machine_delete(machine_id):
 def reception():
     return render_template('reception.html')
 
-@app.route('/result_default')
-@login_required
-def result_default():
-    date = datetime.date.today().strftime('%Y-%m-%d')
-    result = Result.query.order_by(Result.id.desc()).all()
-    return render_template('result.html', result=result, date=date)
-
 @app.route('/result/<string:date>/')
 @login_required
 def result(date):
     users = User.query.all()
     results = []
     for user in users:
-        results.append(db.engine.execute('select uuid, machine_type, count(*) as count, counted_at from result group by machine_type having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '" and uuid = "' + user.uuid + '"'))
+        results.append({
+            'result': db.engine.execute('select uuid, machine_id, count(*) as count, counted_at from results group by machine_id having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '" and uuid = "' + user.uuid + '"'),
+            'user': {
+                'id': user.id,
+                'name': user.name
+            }
+        })
     return render_template('result.html', results=results, date=date)
 
 @app.route('/result/add', methods=['POST'])
