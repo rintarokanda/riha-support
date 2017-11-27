@@ -74,3 +74,4 @@ class MachineLog(db.Model):
     uuid = db.Column(db.String(100), unique=True, nullable=False)
     machine_id = db.Column(db.Integer, unique=True, nullable=False)
     entered_at = db.Column(db.TIMESTAMP, unique=False)
+    exited_at = db.Column(db.TIMESTAMP, unique=False)
