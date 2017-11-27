@@ -6,6 +6,7 @@ from flask import request, redirect, url_for, render_template, flash, abort, \
 from flaskr import app, db
 from flaskr.models import User, Machine, AccessLog, MachineLog, Result
 import datetime
+from sqlalchemy import asc, desc
 
 # Private ===
 # ログイン必須にする
@@ -206,7 +207,7 @@ def result(date):
     results = []
     for user in users:
         results.append({
-            'result': db.engine.execute('select uuid, machine_id, count(*) as count, counted_at from results group by machine_id having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '" and uuid = "' + user.uuid + '"'),
+            'result': db.engine.execute('select machine_id, count(*) as count, counted_at from results group by machine_id having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '"'),
             'user': {
                 'id': user.id,
                 'name': user.name
@@ -296,35 +297,31 @@ def api_reception():
 
         db.session.add(recent_log)
         db.session.commit()
-        result = AccessLog(
-                uuid       = request.form['uuid'],
-                )
+
         return jsonify({'message': message})
     except:
         return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
 
 @app.route('/api/standby', methods=['POST'])
 def api_standby():
-    try:
-        # ユーザのマシン接近記録を取得
-        log = MachineLog.query.filter(MachineLog.uuid == request.form['uuid'], MachineLog.machine_id == request.form['machine_id']).first()
+    # ユーザのマシン接近記録を取得
+    log = MachineLog.query.filter(MachineLog.uuid == request.form['uuid'], MachineLog.machine_id == request.form['machine_id']).order_by(desc(MachineLog.exited_at)).first()
 
-        # 最新の接近記録がなければ作成
-        if log is None or log.uuid != request.form['uuid']:
-            log = MachineLog(
-                uuid       = request.form['uuid'],
-                machine_id = request.form['machine_id'],
-                entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                )
+    # 最新の接近記録がなければ作成 (退出時間から30秒以内のものがない)
+    if log is None or log.uuid != request.form['uuid'] or (datetime.datetime.now() + datetime.timedelta(seconds=30)) - log.exited_at > datetime.timedelta(seconds=30):
+        log = MachineLog(
+            uuid       = request.form['uuid'],
+            machine_id = request.form['machine_id'],
+            entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            exited_at = (datetime.datetime.now() + datetime.timedelta(seconds=30)).strftime('%Y-%m-%d %H:%M:%S')
+            )
 
-        # 接近記録があれば延長
-        else:
-            log.entered_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    # 接近記録があれば延長
+    else:
+        log.exited_at = (datetime.datetime.now() + datetime.timedelta(seconds=30)).strftime('%Y-%m-%d %H:%M:%S')
 
-        db.session.add(log)
-        db.session.commit()
-        return jsonify({'message': 'Standby.'})
-    except:
-        return jsonify({'status': 'Bad Request', 'message': 'Your request is invalid.'})
+    db.session.add(log)
+    db.session.commit()
+    return jsonify({'message': 'Standby.'})
 
 # === /API Routes
