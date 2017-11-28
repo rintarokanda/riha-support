@@ -247,28 +247,28 @@ def api_result_add():
 @app.route('/api/reception/recent', methods=['GET'])
 def api_reception_recent():
     # 最新の入室記録を確認
-    logs = AccessLog.query.filter(AccessLog.exited_at == None).order_by(AccessLog.uuid)
+    logs = AccessLog.query.filter(AccessLog.exited_at == None).order_by(desc(AccessLog.entered_at))
     entered_users = []
 
     for log in logs:
         user = User.query.filter(User.uuid == log.uuid).first()
         entered_users.append({'id': user.id, 'name': user.name})
 
-    recent_log = AccessLog.query.order_by(AccessLog.uuid).first()
+    recent_log = AccessLog.query.order_by(desc(AccessLog.entered_at)).first()
 
     # 最新の入室
     if recent_log is not None and recent_log.exited_at is None and datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=10):
         user = User.query.filter(User.uuid == recent_log.uuid).first()
-        return jsonify({'status': 'OK', 'entered_users': entered_users, 'result': {'id': user.id, 'name': user.name, 'type': 'entered'}})
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'action': {'id': user.id, 'name': user.name, 'type': 'entered'}})
 
     # 最新の退出
     elif recent_log is not None and recent_log.exited_at is not None and datetime.datetime.now() - recent_log.exited_at < datetime.timedelta(seconds=10):
         user = User.query.filter(User.uuid == recent_log.uuid).first()
-        return jsonify({'status': 'OK', 'entered_users': entered_users, 'result': {'id': user.id, 'name': user.name, 'type': 'exited'}})
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'action': {'id': user.id, 'name': user.name, 'type': 'exited'}})
 
     # それ以外
     else:
-        return jsonify({'status': 'OK', 'result': None})
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'action': None})
 
 
 # enter or exit
