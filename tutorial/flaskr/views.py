@@ -200,20 +200,57 @@ def machine_delete(machine_id):
 def reception():
     return render_template('reception.html')
 
+# 実績画面
 @app.route('/result/<string:date>/')
 @login_required
 def result(date):
     users = User.query.all()
-    results = []
+    data = []
     for user in users:
-        results.append({
-            'result': db.engine.execute('select machine_id, count(*) as count, counted_at from results group by machine_id having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '"'),
+        # その日のユーザのリハビリマシン動作時間を取得
+        rows = db.engine.execute('select machine_id, entered_at, exited_at from machine_logs where uuid = "' + user.uuid + '" AND DATE_FORMAT(entered_at, "%%Y-%%m-%%d") = "' + date + '" AND DATE_FORMAT(exited_at, "%%Y-%%m-%%d") = "' + date + '"');
+
+        # 配列に格納させる
+        machine_logs = []
+        for row in rows:
+            machine_logs.append({
+                'machine_id': row.machine_id,
+                'entered_at': row.entered_at,
+                'exited_at': row.exited_at,
+            })
+
+
+        # その日のリハビリマシンの動作回数を取得
+        rows = db.engine.execute('select machine_id, counted_at from results where DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '"');
+
+        # 配列に格納させる
+        results = []
+        for row in rows:
+            results.append({
+                'machine_id': row.machine_id,
+                'counted_at': row.counted_at,
+            })
+
+
+        # ユーザが動作させていた時間帯の動作回数をカウント (count[machine_id] #=> 10)の形式
+        count = {}
+
+        # とりあえず machine_id は 1しか存在しない
+        count[1] = 0
+
+        for machine_log in machine_logs:
+            for result in results:
+                if (machine_log['entered_at'] < result['counted_at'] < machine_log['exited_at']):
+                    count[machine_log['machine_id']] += 1
+
+        data.append({
+            'result': count,
             'user': {
                 'id': user.id,
                 'name': user.name
             }
         })
-    return render_template('result.html', results=results, date=date)
+    return render_template('result.html', results=data, date=date)
 
 @app.route('/result/add', methods=['POST'])
 @login_required
