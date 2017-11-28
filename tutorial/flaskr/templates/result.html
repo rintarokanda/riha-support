@@ -3,68 +3,27 @@
 {% block body %}
 
 <div class ="row">
-<div class="columns large-collapse">
-
-<div class="row">
   <div class="columns large-collapse">
-    <h1>{{ date }}の実績報告画面</h1>
+
+    <div class="row">
+      <div class="columns large-collapse">
+        <h1>本日の実績({{ date }})</h1>
+      </div>
+    </div>
+
+    <table>
+      <tr>
+        <th width="225">名前</th>
+        <th width="225">重り上げ</th>
+      </tr>
+      {% for users_result in results %}
+      <tr>
+        <td>{{ users_result['user'].name }}</td>
+        <td>{{ users_result.result[1] }}回</td>
+      </tr>
+      {% endfor %}
+    </table>
   </div>
 </div>
-
-<form action="{{ url_for('result_add') }}" method=post class=result_add>
-  <dl>
-    <dt>uuid:
-    <dd><input type=text size=20 name=uuid value="">
-    <dt>machine_type:
-      <select name="machine_type">
-        <option value="a">マシンA</option>
-        <option value="b">マシンB</option>
-        <option value="c">マシンC</option>
-      </select>
-    <dt>counted_at:
-        <dd><input type=date size=20 name="counted_at" format ="yyyy-mm-dd HH:ii:ss" value="">
-      　<!-- <p><input type="date" name="example" min="2017-10-27" max="2018-3-31"></p> -->
-    <dd><input class="button" type=submit value={{ 'save'}}>
-  </dl>
-</form>
-
-
-<!-- {% for result in result %}
-<h4>{{ result.uuid }}</h4>{{ result.machine_type }} {{ result.counted_at }}
-{% else %}
-{% endfor %} -->
-
-{% for users_result in results %}
-  <h1>{{ users_result.user.name }}</h1>
-  {% for result in users_result.result %}
-    <h3>{{ result.uuid }}</h3>
-    <h4>{{ result.count }}</h4>
-  {% endfor %}
-{% endfor %}
-
-<table>
-  <thead>
-    <tr>
-      <th width="225">ID</th>
-      <th width="150">UUID</th>
-      <th width="150">マシンタイプ</th>
-      <th width="150">動作検出日時</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in result %}
-    <tr>
-      <td>{{ row.id }}</td>
-      <td>{{ row.uuid }}</td>
-      <td>{{ row.machine_id }}</td>
-      <td>{{ row.counted_at }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-</div>
-</div>
-
 
 {% endblock %}

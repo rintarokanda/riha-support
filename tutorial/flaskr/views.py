@@ -200,20 +200,57 @@ def machine_delete(machine_id):
 def reception():
     return render_template('reception.html')
 
+# 実績画面
 @app.route('/result/<string:date>/')
 @login_required
 def result(date):
     users = User.query.all()
-    results = []
+    data = []
     for user in users:
-        results.append({
-            'result': db.engine.execute('select machine_id, count(*) as count, counted_at from results group by machine_id having DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '"'),
+        # その日のユーザのリハビリマシン動作時間を取得
+        rows = db.engine.execute('select machine_id, entered_at, exited_at from machine_logs where uuid = "' + user.uuid + '" AND DATE_FORMAT(entered_at, "%%Y-%%m-%%d") = "' + date + '" AND DATE_FORMAT(exited_at, "%%Y-%%m-%%d") = "' + date + '"');
+
+        # 配列に格納させる
+        machine_logs = []
+        for row in rows:
+            machine_logs.append({
+                'machine_id': row.machine_id,
+                'entered_at': row.entered_at,
+                'exited_at': row.exited_at,
+            })
+
+
+        # その日のリハビリマシンの動作回数を取得
+        rows = db.engine.execute('select machine_id, counted_at from results where DATE_FORMAT(counted_at, "%%Y-%%m-%%d") = "' + date + '"');
+
+        # 配列に格納させる
+        results = []
+        for row in rows:
+            results.append({
+                'machine_id': row.machine_id,
+                'counted_at': row.counted_at,
+            })
+
+
+        # ユーザが動作させていた時間帯の動作回数をカウント (count[machine_id] #=> 10)の形式
+        count = {}
+
+        # とりあえず machine_id は 1しか存在しない
+        count[1] = 0
+
+        for machine_log in machine_logs:
+            for result in results:
+                if (machine_log['entered_at'] < result['counted_at'] < machine_log['exited_at']):
+                    count[machine_log['machine_id']] += 1
+
+        data.append({
+            'result': count,
             'user': {
                 'id': user.id,
                 'name': user.name
             }
         })
-    return render_template('result.html', results=results, date=date)
+    return render_template('result.html', results=data, date=date)
 
 @app.route('/result/add', methods=['POST'])
 @login_required
@@ -247,28 +284,28 @@ def api_result_add():
 @app.route('/api/reception/recent', methods=['GET'])
 def api_reception_recent():
     # 最新の入室記録を確認
-    logs = AccessLog.query.filter(AccessLog.exited_at == None).order_by(AccessLog.uuid)
+    logs = AccessLog.query.filter(AccessLog.exited_at == None).order_by(desc(AccessLog.entered_at))
     entered_users = []
 
     for log in logs:
         user = User.query.filter(User.uuid == log.uuid).first()
         entered_users.append({'id': user.id, 'name': user.name})
 
-    recent_log = AccessLog.query.order_by(AccessLog.uuid).first()
+    recent_log = AccessLog.query.order_by(desc(AccessLog.entered_at)).first()
 
     # 最新の入室
     if recent_log is not None and recent_log.exited_at is None and datetime.datetime.now() - recent_log.entered_at < datetime.timedelta(seconds=10):
         user = User.query.filter(User.uuid == recent_log.uuid).first()
-        return jsonify({'status': 'OK', 'entered_users': entered_users, 'result': {'id': user.id, 'name': user.name, 'type': 'entered'}})
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'action': {'id': user.id, 'name': user.name, 'type': 'entered'}})
 
     # 最新の退出
     elif recent_log is not None and recent_log.exited_at is not None and datetime.datetime.now() - recent_log.exited_at < datetime.timedelta(seconds=10):
         user = User.query.filter(User.uuid == recent_log.uuid).first()
-        return jsonify({'status': 'OK', 'entered_users': entered_users, 'result': {'id': user.id, 'name': user.name, 'type': 'exited'}})
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'action': {'id': user.id, 'name': user.name, 'type': 'exited'}})
 
     # それ以外
     else:
-        return jsonify({'status': 'OK', 'result': None})
+        return jsonify({'status': 'OK', 'entered_users': entered_users, 'action': None})
 
 
 # enter or exit

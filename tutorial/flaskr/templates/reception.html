@@ -1,37 +1,70 @@
 {% extends "layout.html" %}
 {% block body %}
-
 <div class ="row">
 <div class="columns large-collapse">
-<h1>リハビリ中</h1>
+  <audio id="sound" preload="auto">
+    <source src="{{ url_for('static', filename='sounds/1up.mp3') }}" type="audio/mp3">
+  </audio>
+  <div class="message-container">
+    <div class="message-box">
+      <h2 id="js-message"></h2>
+    </div>
+  </div>
+  <h2>受付済み</h2>
+    <ul id="js-users">
+      <li>受付済みのユーザはいません</li>
+    </ul>
+  </div>
+</div>
 
-<script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
 <script>
-  // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyBqrDr2hEefQEHgRWYAghXMC-NFJ9X25j4",
-    //authDomain: "cheam-591a2.firebaseapp.com",
-    databaseURL: "https://riha-support.firebaseio.com/",
-  };
-  firebase.initializeApp(config);
-  //監視する
-  var starCountRef = firebase.database().ref('users/');
-  starCountRef.on('value', function(users) {
-    setUsers(users);
-  });
 
-  function setUsers(users) {
-    user_area = document.getElementById("users");
-    users = users.val();
-    el = '';
-    for (let id in users) {
-      el += "<h2>" + users[id].name + "</h2>";
+$(function() {
+  setInterval(request, 2000);
+});
+
+var request = function() {
+  $.ajax({
+    type: "GET",//POST送信またはGET送信が有効
+    url: "/api/reception/recent",//実行したいPHPファイル（パス）を指定する。（※今回はDBにポイントを加算する処理）
+    success:function(res) {
+      console.log(res);
+      setUsers(res);
+    },
+    error:function() {
+      console.log("Connection error.");
     }
-    user_area.innerHTML = el;
-  }
-</script>
-<div id="users"></div>
+  });
+}
 
-</div>
-</div>
+function setUsers(data)
+{
+  // 受付済みユーザ
+  users = data.entered_users;
+  list_html = '';
+  for (var idx in users) {
+    console.log(users[idx].name);
+    list_html += '<li>' + users[idx].name + '</li>';
+  }
+  $("#js-users").html(list_html);
+
+  // 出入りしたユーザ
+  if (data.action != null) {
+    if ($("#js-message").html() == '') {
+      var se = $('#sound');
+      se[0].currentTime = 0;
+      se[0].play();
+      var message = '';
+      if (data.action.type === 'entered') {
+        message = data.action.name + 'さん、こんにちは！';
+      } else {
+        message = data.action.name + 'さん、お疲れ様でした！';
+      }
+      $("#js-message").html(message);
+    }
+  } else {
+    $("#js-message").html('');
+  }
+}
+</script>
 {% endblock %}
